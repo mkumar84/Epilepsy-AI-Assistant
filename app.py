@@ -1,20 +1,21 @@
 import streamlit as st
-from transformers import pipeline
+import requests
 
-# Load a SMALLER LLM model
-@st.cache_resource
-def load_model():
-    return pipeline("text-generation", model="tiiuae/falcon-7b-instruct")
+# Load API key securely from Streamlit Secrets
+API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+API_KEY = st.secrets["HUGGINGFACE_API_KEY"]  # 🔒 Securely fetch the key
 
-# Initialize model
-model = load_model()
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+
+def query_huggingface(payload):
+    response = requests.post(API_URL, headers=HEADERS, json=payload)
+    return response.json()
 
 # Streamlit UI
 st.title("🧠 Epilepsy AI Assistant")
 st.write("Ask me anything about epilepsy!")
 
-# User input
 query = st.text_input("Enter your question:")
 if query:
-    response = model(query, max_length=200, do_sample=True)
-    st.write("**Answer:**", response[0]["generated_text"])
+    response = query_huggingface({"inputs": query})
+    st.write("**Answer:**", response)
