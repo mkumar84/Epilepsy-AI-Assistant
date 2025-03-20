@@ -1,10 +1,10 @@
 import streamlit as st
 from transformers import pipeline
 
-# Load a FREE LLM from Hugging Face
+# Load a SMALLER LLM model
 @st.cache_resource
 def load_model():
-    return pipeline("text-generation", model="mistralai/Mistral-7B-Instruct-v0.1")
+    return pipeline("text-generation", model="tiiuae/falcon-7b-instruct")
 
 # Initialize model
 model = load_model()
