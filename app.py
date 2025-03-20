@@ -1,16 +1,13 @@
 import streamlit as st
-from langchain.chains import RetrievalQA
-from langchain.vectorstores import Chroma
-from sentence_transformers import SentenceTransformer
+from transformers import pipeline
 
-# Load Hugging Face embeddings (FREE)
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+# Load a FREE LLM from Hugging Face
+@st.cache_resource
+def load_model():
+    return pipeline("text-generation", model="mistralai/Mistral-7B-Instruct-v0.1")
 
-# Load ChromaDB
-vectorstore = Chroma(persist_directory="./chromadb", embedding_function=embedding_model.encode)
-
-# Set up QA system
-qa_chain = RetrievalQA.from_chain_type(llm="gpt-3.5-turbo", retriever=vectorstore.as_retriever())
+# Initialize model
+model = load_model()
 
 # Streamlit UI
 st.title("🧠 Epilepsy AI Assistant")
@@ -19,5 +16,5 @@ st.write("Ask me anything about epilepsy!")
 # User input
 query = st.text_input("Enter your question:")
 if query:
-    response = qa_chain.run(query)
-    st.write("**Answer:**", response)
+    response = model(query, max_length=200, do_sample=True)
+    st.write("**Answer:**", response[0]["generated_text"])
